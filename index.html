@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>TFarte</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="48x48" href="favicon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#E8702A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="O meu dia">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#FFF6E8;--card:#FFFFFF;--ink:#2B1A14;--muted:#6B5348;--accent:#E8702A;--amber:#F2B134;--red:#B83227;--redtext:#B83227;--soft:#F6D9BC;--line:#EBD5BE;--onacc:#2B1A14;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -99,10 +107,12 @@ nav button[aria-pressed="true"]{background:var(--soft)}
 .cover:disabled,.av:disabled{cursor:default}
 .vb{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0}
 .vb[hidden]{display:none}
+#p-feed{max-width:640px;margin:0 auto}
+.wb{display:flex;align-items:center;gap:10px;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:0;min-height:44px;cursor:pointer;border-radius:12px;margin-bottom:8px;max-width:100%}
 </style>
 </head>
 <body>
-<div id="notice"><h1>O meu dia</h1><p>Não consegui ligar à base de dados. Confirma se a configuração do Firebase está preenchida no início do script e tenta outra vez.</p></div>
+<div id="notice"><h1>TFarte</h1><p>Não consegui ligar à base de dados. Confirma se a configuração do Firebase está preenchida no início do script e tenta outra vez.</p></div>
 <div class="wrap">
 
 <section class="pg" id="p-perfil">
@@ -132,6 +142,11 @@ nav button[aria-pressed="true"]{background:var(--soft)}
 <div id="feed"></div></div>
 </section>
 
+<section class="pg" id="p-feed" hidden>
+<div class="pgh"><h1>Feed</h1><button class="btn o" data-act="reload">Atualizar</button></div>
+<div id="allfeed"></div>
+</section>
+
 <section class="pg" id="p-descobrir" hidden>
 <div class="pgh"><h1>Descobrir</h1></div>
 <div class="card"><input id="q" type="search" aria-label="Pesquisar pessoas pelo nome" placeholder="Pesquisar pelo nome…"></div>
@@ -149,7 +164,7 @@ nav button[aria-pressed="true"]{background:var(--soft)}
 </section>
 
 <section class="pg" id="p-dia" hidden>
-<div class="pgh"><h1>TFarte</h1><span id="date"></span></div>
+<div class="pgh"><h1>O meu dia</h1><span id="date"></span></div>
 <div class="card" id="hero"></div>
 <form class="card" id="taskForm">
 <input id="taskT" aria-label="Nova tarefa" placeholder="O que tens para fazer?" maxlength="120" required>
@@ -161,6 +176,7 @@ nav button[aria-pressed="true"]{background:var(--soft)}
 </div>
 <div id="msg" role="status" hidden></div>
 <nav><div>
+<button data-tab="feed" aria-label="Feed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v6H4zM4 15h16M4 19h10"/></svg>Feed</button>
 <button data-tab="perfil" aria-label="Perfil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Perfil</button>
 <button data-tab="descobrir" aria-label="Descobrir"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Descobrir</button>
 <button data-tab="notas" aria-label="Notas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM9 8h6M9 12h6M9 16h3"/></svg>Notas</button>
@@ -179,7 +195,7 @@ var firebaseConfig={
 };
 </script>
 <script>
-var db,user,uid,viewing,P={},posts=[],priv={notes:[],tasks:[],likes:{}},pend=[],tab='perfil';
+var db,user,uid,viewing,P={},posts=[],priv={notes:[],tasks:[],likes:{}},pend=[],tab='perfil',prev='descobrir',feedPosts=[],feedUsers={};
 function $(i){return document.getElementById(i)}
 function msg(t){var m=$('msg');m.textContent=t;m.hidden=false;clearTimeout(msg.t);msg.t=setTimeout(function(){m.hidden=true},3500)}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
@@ -217,22 +233,37 @@ $('hero').innerHTML='<h2>Oii, '+esc((P.name||'').split(' ')[0]||'')+'!</h2><p st
 var ts=priv.tasks.slice().sort(function(a,b){if(a.done!==b.done)return a.done?1:-1;var x=a.time||'99:99',y=b.time||'99:99';return x<y?-1:x>y?1:a.id-b.id});
 $('tasks').innerHTML=ts.length?ts.map(function(t){return '<article class="card" style="padding:8px 12px"><div class="acts" style="border:0;padding:0;align-items:center"><button class="ic" data-act="done" data-id="'+t.id+'" aria-pressed="'+t.done+'" aria-label="'+(t.done?'Desfazer':'Marcar como feita')+'" style="'+(t.done?'color:var(--redtext)':'')+'">'+I.ok+'</button><div style="flex:1;min-width:0"><div class="tx'+(t.done?' d':'')+'" style="margin:0;font-size:16px">'+esc(t.t)+'</div>'+(t.time?'<span class="who"><span>'+esc(t.time)+'</span></span>':'')+'</div><button class="ic r" data-act="deltask" data-id="'+t.id+'" aria-label="Apagar tarefa" style="margin-left:0">'+I.del+'</button></div></article>'}).join(''):'<div class="empty"><b>Nada por aqui</b>Adiciona a primeira tarefa do dia.</div>';
 }
+async function loadFeed(){
+try{var us=await db.collection('u').limit(100).get();feedUsers={};us.docs.forEach(function(d){feedUsers[d.id]=d.data()});var all=[];
+await Promise.all(us.docs.map(function(d){return db.collection('u/'+d.id+'/posts').orderBy('ts','desc').limit(10).get().then(function(q){q.docs.forEach(function(x){var p=x.data();p.id=x.id;p.uid=d.id;all.push(p)})})}));
+all.sort(function(a,b){return b.ts-a.ts});feedPosts=all.slice(0,40)}catch(e){feedPosts=[];msg('Não consegui carregar o feed.')}
+renderFeed()}
+function renderFeed(){
+var h='';
+if(!feedPosts.length)h='<div class="empty"><b>O feed está vazio</b>Quando alguém publicar, aparece aqui.</div>';
+feedPosts.forEach(function(p){
+var u=feedUsers[p.uid]||{name:'Sem nome'};
+var im=p.imgs&&p.imgs.length?'<div class="imgs n'+p.imgs.length+'">'+p.imgs.map(function(s){return '<img src="'+s+'" alt="Foto publicada">'}).join('')+'</div>':'';
+var lk=!!priv.likes[p.uid+'_'+p.id];
+h+='<article class="card"><button class="wb" data-act="open" data-uid="'+esc(p.uid)+'" aria-label="Ver perfil de '+esc(u.name)+'">'+avh('sm',u.avatar,u.name)+'<span class="who"><b>'+esc(u.name)+'</b><span>'+fmt(p.ts)+'</span></span></button>'+(p.t?'<p class="tx">'+rich(p.t)+'</p>':'')+im+'<div class="acts"><button class="ic" data-act="like" data-id="'+p.id+'" data-uid="'+esc(p.uid)+'" aria-pressed="'+lk+'" aria-label="Gosto">'+I.like+'</button>'+(p.t?'<button class="ic" data-act="tonote" data-id="'+p.id+'" data-uid="'+esc(p.uid)+'">'+I.note+'Nota</button>':'')+(p.uid===uid?'<button class="ic r" data-act="delpost" data-id="'+p.id+'" aria-label="Apagar publicação">'+I.del+'</button>':'')+'</div></article>'});
+$('allfeed').innerHTML=h}
 async function search(){var q=norm($('q').value);try{var s=await db.collection('u').limit(200).get();var r=s.docs.map(function(d){var x=d.data();x.uid=d.id;return x}).filter(function(x){return !q||norm(x.name).indexOf(q)>-1});$('results').innerHTML=r.length?r.map(function(x){return '<button class="res" data-act="open" data-uid="'+esc(x.uid)+'">'+avh('',x.avatar,x.name)+'<div><b>'+esc(x.name)+'</b><span>'+esc(x.bio||'')+'</span></div></button>'}).join(''):'<div class="empty"><b>Ninguém com esse nome</b>Confirma o nome ou convida a pessoa para a app.</div>'}catch(e){msg('Não consegui pesquisar.')}}
-function show(t){tab=t;['perfil','descobrir','notas','dia'].forEach(function(k){$('p-'+k).hidden=k!==t});document.querySelectorAll('nav button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-tab')===t)});window.scrollTo(0,0)}
+function show(t){tab=t;['feed','perfil','descobrir','notas','dia'].forEach(function(k){$('p-'+k).hidden=k!==t});document.querySelectorAll('nav button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-tab')===t)});window.scrollTo(0,0)}
 document.addEventListener('click',function(e){
-var n=e.target.closest('nav button');if(n){var t=n.getAttribute('data-tab');show(t);if(t==='perfil')loadProf(uid);if(t==='descobrir')search();return}
+var n=e.target.closest('nav button');if(n){var t=n.getAttribute('data-tab');show(t);if(t==='perfil')loadProf(uid);if(t==='descobrir')search();if(t==='feed')loadFeed();return}
 var b=e.target.closest('[data-act]');if(!b)return;
 var a=b.getAttribute('data-act'),id=b.getAttribute('data-id'),nid=Number(id);
-if(a==='open'){show('perfil');loadProf(b.getAttribute('data-uid'));return}
-if(a==='back'){show('descobrir');return}
+if(a==='reload'){loadFeed();return}
+if(a==='open'){prev=tab;show('perfil');loadProf(b.getAttribute('data-uid'));return}
+if(a==='back'){show(prev||'descobrir');return}
 if(a==='unpend'){pend.splice(Number(b.getAttribute('data-i')),1);render();return}
-if(a==='delpost'){db.doc('u/'+uid+'/posts/'+id).delete().then(function(){loadProf(uid)}).catch(function(){msg('Não consegui apagar.')});return}
-if(a==='like'){var k=viewing+'_'+id;if(priv.likes[k])delete priv.likes[k];else priv.likes[k]=1}
-if(a==='tonote'){posts.forEach(function(p){if(p.id===id){priv.notes.unshift({id:Date.now(),title:p.t.slice(0,40),t:p.t});msg('Guardado nas tuas notas')}})}
+if(a==='delpost'){db.doc('u/'+uid+'/posts/'+id).delete().then(function(){loadProf(uid);if(tab==='feed')loadFeed()}).catch(function(){msg('Não consegui apagar.')});return}
+if(a==='like'){var k=(b.getAttribute('data-uid')||viewing)+'_'+id;if(priv.likes[k])delete priv.likes[k];else priv.likes[k]=1}
+if(a==='tonote'){var tu=b.getAttribute('data-uid')||viewing;posts.map(function(p){p.uid=p.uid||viewing;return p}).concat(feedPosts).forEach(function(p){if(p.id===id&&p.uid===tu){priv.notes.unshift({id:Date.now(),title:p.t.slice(0,40),t:p.t});msg('Guardado nas tuas notas')}})}
 if(a==='delnote')priv.notes=priv.notes.filter(function(p){return p.id!==nid});
 if(a==='deltask')priv.tasks=priv.tasks.filter(function(p){return p.id!==nid});
 if(a==='done')priv.tasks.forEach(function(p){if(p.id===nid)p.done=!p.done});
-privSave();render();
+privSave();render();if(tab==='feed')renderFeed();
 });
 var st;$('q').oninput=function(){clearTimeout(st);st=setTimeout(search,250)};
 $('photoBtn').onclick=function(){$('file').click()};
@@ -254,8 +285,9 @@ uid=cred.user.uid;db=firebase.firestore();
 }catch(e){}
 if(!db||!uid){document.body.classList.add('off');return}
 try{var s=await db.doc('u/'+uid).get();if(!s.exists){var nm=(prompt('Como te chamas?')||'').trim()||'Eu';await db.doc('u/'+uid).set({name:nm,bio:'',avatar:'',cover:''})}}catch(e){msg('Não consegui criar o teu perfil.')}
-await privLoad();await loadProf(uid);show('perfil');
+await privLoad();await loadProf(uid);show('feed');loadFeed();
 })();
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(function(){});
 </script>
 </body>
 </html>
