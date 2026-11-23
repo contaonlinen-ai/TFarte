@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#E8702A">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="O meu dia">
+<meta name="apple-mobile-web-app-title" content="TFarte">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#FFF6E8;--card:#FFFFFF;--ink:#2B1A14;--muted:#6B5348;--accent:#E8702A;--amber:#F2B134;--red:#B83227;--redtext:#B83227;--soft:#F6D9BC;--line:#EBD5BE;--onacc:#2B1A14;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -108,16 +108,48 @@ nav button[aria-pressed="true"]{background:var(--soft)}
 .vb{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0}
 .vb[hidden]{display:none}
 #p-feed{max-width:640px;margin:0 auto}
-.wb{display:flex;align-items:center;gap:10px;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:0;min-height:44px;cursor:pointer;border-radius:12px;margin-bottom:8px;max-width:100%}
 #loading{display:none;position:fixed;inset:0;z-index:30;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--muted);font-weight:500}
 #loading img{border-radius:22px}
 body.loading #loading{display:flex}
 body.loading .wrap,body.loading nav{visibility:hidden}
+#auth{display:none;position:fixed;inset:0;z-index:31;background:var(--bg);overflow:auto}
+body.auth #auth{display:block}
+body.auth .wrap,body.auth nav{display:none}
+.authbox{max-width:380px;margin:0 auto;padding:48px 20px;text-align:center;display:flex;flex-direction:column;gap:10px}
+.authbox img{border-radius:20px;align-self:center}
+.authbox form{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.authbox input[hidden]{display:none}
+.aerr{color:var(--redtext);font-size:14px;margin:0;min-height:1.2em;overflow-wrap:anywhere}
+.linkbtn{background:none;border:0;color:var(--muted);font:inherit;text-decoration:underline;min-height:44px;cursor:pointer}
+.ic span:empty{display:none}
+.cmx{border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+.cmi{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;font-size:15px}
+.cmi p{margin:0;flex:1;min-width:0;overflow-wrap:anywhere;white-space:pre-wrap}
+.cmi b{font-weight:700}
+.cmi .ic{min-height:36px;min-width:36px;padding:0 8px;color:var(--muted)}
+.cmi .ic svg{width:18px;height:18px}
+.cmf{display:flex;gap:8px;align-items:center;margin-top:6px}
+.cmf .btn{padding:0 16px;flex:none}
+.cmn{color:var(--muted);font-size:14px;margin:0 0 8px}
+.acctp{margin:12px 0 0;color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.wb{display:flex;align-items:center;gap:10px;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:0;min-height:44px;cursor:pointer;border-radius:12px;margin-bottom:8px;max-width:100%}
 </style>
 </head>
 <body class="loading">
-<div id="notice"><h1>TFarte</h1><p id="noticeTx">Não consegui ligar à base de dados. ...</p></div>
+<div id="notice"><h1>TFarte</h1><p id="noticeTx">Não consegui ligar à base de dados. Confirma se a configuração do Firebase está preenchida no início do script e tenta outra vez.</p></div>
 <div id="loading" role="status"><img src="icon-192.png" alt="" width="96" height="96"><span>A carregar…</span></div>
+<div id="auth"><div class="authbox"><img src="icon-192.png" alt="" width="72" height="72"><h1>TFarte</h1>
+<form id="authForm">
+<input id="aName" placeholder="O teu nome" autocomplete="name" maxlength="40" hidden>
+<input id="aEmail" type="email" placeholder="Email" autocomplete="email" required>
+<input id="aPass" type="password" placeholder="Palavra-passe (mínimo 6)" autocomplete="current-password" minlength="6" required>
+<input id="aCode" placeholder="Código de convite" autocomplete="off" hidden>
+<p class="aerr" id="aErr" role="alert"></p>
+<button class="btn" id="aGo" type="submit">Entrar</button>
+</form>
+<button class="btn o" type="button" id="aSwitch">Criar conta nova</button>
+<button class="linkbtn" type="button" id="aReset">Esqueci a palavra-passe</button>
+</div></div>
 <div class="wrap">
 
 <section class="pg" id="p-perfil">
@@ -133,6 +165,7 @@ body.loading .wrap,body.loading nav{visibility:hidden}
 <input id="nameIn" aria-label="O teu nome" maxlength="40" required>
 <textarea id="bioTx" aria-label="A tua bio" maxlength="160" placeholder="A tua bio" style="margin-top:8px"></textarea>
 <div class="row"><button class="btn" type="submit">Guardar</button><button class="btn o" type="button" id="avBtn">Foto de perfil</button><button class="btn o" type="button" id="covBtn">Foto de capa</button></div>
+<div id="acct"></div>
 </form>
 <div class="stats" id="stats"></div></div>
 <div class="main"><form class="card" id="postForm">
@@ -210,10 +243,11 @@ function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/
 function ini(n){return (n||'?').trim().charAt(0).toUpperCase()}
 function avh(cls,src,n){return '<div class="av '+cls+'" aria-hidden="true">'+(src?'<img src="'+src+'" alt="">':esc(ini(n)))+'</div>'}
 function shrink(f,max,cb){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',0.62))};im.src=r.result};r.readAsDataURL(f)}
-var I={like:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.600-9.300-9.100C1.100 8.600 3 5 6.500 5c2 0 3.700 1.100 5.500 3.300C13.800 6.100 15.500 5 17.500 5 21 5 22.900 8.600 21.300 11.900 19 16.400 12 21 12 21z"/></svg>',note:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM9 8h6M9 12h6"/></svg>',del:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',ok:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'};
+var I={chat:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H5l2-3.500A8 8 0 1 1 21 12z"/></svg>',like:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.600-9.300-9.100C1.100 8.600 3 5 6.500 5c2 0 3.700 1.100 5.500 3.300C13.800 6.100 15.500 5 17.500 5 21 5 22.900 8.600 21.300 11.900 19 16.400 12 21 12 21z"/></svg>',note:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM9 8h6M9 12h6"/></svg>',del:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',ok:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'};
 async function privLoad(){try{var s=await db.doc('data/users/'+uid+'/main').get();if(s.exists){var d=s.data();priv.notes=d.notes||[];priv.tasks=d.tasks||[];priv.likes=d.likes||{}}}catch(e){}}
 function privSave(){return db.doc('data/users/'+uid+'/main').set(priv).catch(function(){msg('Não consegui guardar.')})}
-async function loadProf(u){viewing=u;try{var s=await db.doc('u/'+u).get();P=s.exists?s.data():{name:'Sem nome'};var q=await db.collection('u/'+u+'/posts').orderBy('ts','desc').limit(30).get();posts=q.docs.map(function(d){var x=d.data();x.id=d.id;return x})}catch(e){posts=[];msg('Não consegui carregar o perfil.')}render()}
+async function loadProf(u){viewing=u;try{var s=await db.doc('u/'+u).get();P=s.exists?s.data():{name:'Sem nome'};var q=await db.collection('u/'+u+'/posts').orderBy('ts','desc').limit(30).get();posts=q.docs.map(function(d){var x=d.data();x.id=d.id;x.uid=u;return x})}catch(e){posts=[];msg('Não consegui carregar o perfil.')}
+render();if(posts.length){var mine=posts;await ensureUsers();await loadExtras(mine);if(viewing===u)render()}}
 function upd(o){return db.doc('u/'+uid).update(o).then(function(){return loadProf(uid)}).catch(function(){msg('Não consegui guardar. A foto pode ser grande demais.')})}
 function render(){
 var me=viewing===uid;
@@ -230,7 +264,7 @@ if(!posts.length)h='<div class="empty"><b>Ainda sem publicações</b>'+(me?'Escr
 posts.forEach(function(p){
 var im=p.imgs&&p.imgs.length?'<div class="imgs n'+p.imgs.length+'">'+p.imgs.map(function(s){return '<img src="'+s+'" alt="Foto publicada">'}).join('')+'</div>':'';
 var lk=!!priv.likes[viewing+'_'+p.id];
-h+='<article class="card"><div class="ph">'+avh('sm',P.avatar,P.name)+'<div class="who"><b>'+esc(P.name)+'</b><span>'+fmt(p.ts)+'</span></div></div>'+(p.t?'<p class="tx">'+rich(p.t)+'</p>':'')+im+'<div class="acts"><button class="ic" data-act="like" data-id="'+p.id+'" aria-pressed="'+lk+'" aria-label="Gosto">'+I.like+'</button>'+(p.t?'<button class="ic" data-act="tonote" data-id="'+p.id+'">'+I.note+'Nota</button>':'')+(me?'<button class="ic r" data-act="delpost" data-id="'+p.id+'" aria-label="Apagar publicação">'+I.del+'</button>':'')+'</div></article>'});
+h+='<article class="card"><div class="ph">'+avh('sm',P.avatar,P.name)+'<div class="who"><b>'+esc(P.name)+'</b><span>'+fmt(p.ts)+'</span></div></div>'+(p.t?'<p class="tx">'+rich(p.t)+'</p>':'')+im+cardExtras(p,me)+'</article>'});
 $('feed').innerHTML=h;
 $('notes').innerHTML=priv.notes.length?priv.notes.map(function(n){return '<article class="card note"><h2>'+esc(n.title)+'</h2><p class="tx">'+rich(n.t)+'</p><div class="acts"><span class="who" style="justify-content:center"><span>'+fmt(n.id)+'</span></span><button class="ic r" data-act="delnote" data-id="'+n.id+'" aria-label="Apagar nota">'+I.del+'</button></div></article>'}).join(''):'<div class="empty"><b>Sem notas</b>Guarda aqui ideias, listas e rascunhos. Só tu as vês.</div>';
 var tot=priv.tasks.length;
@@ -238,11 +272,21 @@ $('hero').innerHTML='<h2>Oii, '+esc((P.name||'').split(' ')[0]||'')+'!</h2><p st
 var ts=priv.tasks.slice().sort(function(a,b){if(a.done!==b.done)return a.done?1:-1;var x=a.time||'99:99',y=b.time||'99:99';return x<y?-1:x>y?1:a.id-b.id});
 $('tasks').innerHTML=ts.length?ts.map(function(t){return '<article class="card" style="padding:8px 12px"><div class="acts" style="border:0;padding:0;align-items:center"><button class="ic" data-act="done" data-id="'+t.id+'" aria-pressed="'+t.done+'" aria-label="'+(t.done?'Desfazer':'Marcar como feita')+'" style="'+(t.done?'color:var(--redtext)':'')+'">'+I.ok+'</button><div style="flex:1;min-width:0"><div class="tx'+(t.done?' d':'')+'" style="margin:0;font-size:16px">'+esc(t.t)+'</div>'+(t.time?'<span class="who"><span>'+esc(t.time)+'</span></span>':'')+'</div><button class="ic r" data-act="deltask" data-id="'+t.id+'" aria-label="Apagar tarefa" style="margin-left:0">'+I.del+'</button></div></article>'}).join(''):'<div class="empty"><b>Nada por aqui</b>Adiciona a primeira tarefa do dia.</div>';
 }
+var openCm={};
+function findPosts(pu,pid){return posts.concat(feedPosts).filter(function(p){return p.uid===pu&&p.id===pid})}
+async function ensureUsers(){if(Object.keys(feedUsers).length)return;try{var us=await db.collection('u').limit(100).get();us.docs.forEach(function(d){feedUsers[d.id]=d.data()})}catch(e){}}
+async function loadExtras(list){await Promise.all(list.map(function(p){var base='u/'+p.uid+'/posts/'+p.id;return Promise.all([db.collection(base+'/likes').get(),db.collection(base+'/comments').orderBy('ts').limit(50).get()]).then(function(r){p.likes=r[0].docs.map(function(d){return d.id});p.cm=r[1].docs.map(function(d){var x=d.data();x.id=d.id;return x})}).catch(function(){})}))}
+function cardExtras(p,mine){
+var key=p.uid+'_'+p.id,lk=(p.likes||[]).indexOf(uid)>-1,nl=(p.likes||[]).length,cm=p.cm||[],at=' data-id="'+p.id+'" data-uid="'+esc(p.uid)+'"';
+var h='<div class="acts"><button class="ic" data-act="like"'+at+' aria-pressed="'+lk+'" aria-label="Gosto">'+I.like+'<span>'+(nl||'')+'</span></button><button class="ic" data-act="cm"'+at+' aria-label="Comentários">'+I.chat+'<span>'+(cm.length||'')+'</span></button>'+(p.t?'<button class="ic" data-act="tonote"'+at+'>'+I.note+'Nota</button>':'')+(mine?'<button class="ic r" data-act="delpost" data-id="'+p.id+'" aria-label="Apagar publicação">'+I.del+'</button>':'')+'</div>';
+if(openCm[key]){
+h+='<div class="cmx">'+(cm.length?'':'<p class="cmn">Ainda sem comentários.</p>')+cm.map(function(c){var u=feedUsers[c.uid]||{name:'Alguém'};return '<div class="cmi">'+avh('sm',u.avatar,u.name)+'<p><b>'+esc(u.name)+'</b> '+rich(c.t)+'</p>'+((c.uid===uid||mine)?'<button class="ic" data-act="delcm"'+at+' data-cid="'+c.id+'" aria-label="Apagar comentário">'+I.del+'</button>':'')+'</div>'}).join('')+'<form class="cmf"'+at+'><input maxlength="300" placeholder="Escreve um comentário…" aria-label="Comentário"><button class="btn" type="submit">Enviar</button></form></div>'}
+return h}
 async function loadFeed(){
 try{var us=await db.collection('u').limit(100).get();feedUsers={};us.docs.forEach(function(d){feedUsers[d.id]=d.data()});var all=[];
 await Promise.all(us.docs.map(function(d){return db.collection('u/'+d.id+'/posts').orderBy('ts','desc').limit(10).get().then(function(q){q.docs.forEach(function(x){var p=x.data();p.id=x.id;p.uid=d.id;all.push(p)})})}));
 all.sort(function(a,b){return b.ts-a.ts});feedPosts=all.slice(0,40)}catch(e){feedPosts=[];msg('Não consegui carregar o feed.')}
-renderFeed()}
+renderFeed();var fp=feedPosts;await loadExtras(fp);renderFeed()}
 function renderFeed(){
 var h='';
 if(!feedPosts.length)h='<div class="empty"><b>O feed está vazio</b>Quando alguém publicar, aparece aqui.</div>';
@@ -250,7 +294,7 @@ feedPosts.forEach(function(p){
 var u=feedUsers[p.uid]||{name:'Sem nome'};
 var im=p.imgs&&p.imgs.length?'<div class="imgs n'+p.imgs.length+'">'+p.imgs.map(function(s){return '<img src="'+s+'" alt="Foto publicada">'}).join('')+'</div>':'';
 var lk=!!priv.likes[p.uid+'_'+p.id];
-h+='<article class="card"><button class="wb" data-act="open" data-uid="'+esc(p.uid)+'" aria-label="Ver perfil de '+esc(u.name)+'">'+avh('sm',u.avatar,u.name)+'<span class="who"><b>'+esc(u.name)+'</b><span>'+fmt(p.ts)+'</span></span></button>'+(p.t?'<p class="tx">'+rich(p.t)+'</p>':'')+im+'<div class="acts"><button class="ic" data-act="like" data-id="'+p.id+'" data-uid="'+esc(p.uid)+'" aria-pressed="'+lk+'" aria-label="Gosto">'+I.like+'</button>'+(p.t?'<button class="ic" data-act="tonote" data-id="'+p.id+'" data-uid="'+esc(p.uid)+'">'+I.note+'Nota</button>':'')+(p.uid===uid?'<button class="ic r" data-act="delpost" data-id="'+p.id+'" aria-label="Apagar publicação">'+I.del+'</button>':'')+'</div></article>'});
+h+='<article class="card"><button class="wb" data-act="open" data-uid="'+esc(p.uid)+'" aria-label="Ver perfil de '+esc(u.name)+'">'+avh('sm',u.avatar,u.name)+'<span class="who"><b>'+esc(u.name)+'</b><span>'+fmt(p.ts)+'</span></span></button>'+(p.t?'<p class="tx">'+rich(p.t)+'</p>':'')+im+cardExtras(p,p.uid===uid)+'</article>'});
 $('allfeed').innerHTML=h}
 async function search(){var q=norm($('q').value);try{var s=await db.collection('u').limit(200).get();var r=s.docs.map(function(d){var x=d.data();x.uid=d.id;return x}).filter(function(x){return !q||norm(x.name).indexOf(q)>-1});$('results').innerHTML=r.length?r.map(function(x){return '<button class="res" data-act="open" data-uid="'+esc(x.uid)+'">'+avh('',x.avatar,x.name)+'<div><b>'+esc(x.name)+'</b><span>'+esc(x.bio||'')+'</span></div></button>'}).join(''):'<div class="empty"><b>Ninguém com esse nome</b>Confirma o nome ou convida a pessoa para a app.</div>'}catch(e){msg('Não consegui pesquisar.')}}
 function show(t){tab=t;['feed','perfil','descobrir','notas','dia'].forEach(function(k){$('p-'+k).hidden=k!==t});document.querySelectorAll('nav button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-tab')===t)});window.scrollTo(0,0)}
@@ -259,38 +303,87 @@ var n=e.target.closest('nav button');if(n){var t=n.getAttribute('data-tab');show
 var b=e.target.closest('[data-act]');if(!b)return;
 var a=b.getAttribute('data-act'),id=b.getAttribute('data-id'),nid=Number(id);
 if(a==='reload'){loadFeed();return}
+if(a==='acctform'){$('linkWrap').hidden=!$('linkWrap').hidden;return}
+if(a==='linkgo'){var em=$('lEmail').value.trim(),pw=$('lPass').value;$('lErr').textContent='';auth.currentUser.linkWithCredential(firebase.auth.EmailAuthProvider.credential(em,pw)).then(function(){msg('Conta guardada!');renderAcct()}).catch(function(e){$('lErr').textContent=aerr(e)});return}
+if(a==='signout'){auth.signOut().then(function(){location.reload()});return}
 if(a==='open'){prev=tab;show('perfil');loadProf(b.getAttribute('data-uid'));return}
 if(a==='back'){show(prev||'descobrir');return}
 if(a==='unpend'){pend.splice(Number(b.getAttribute('data-i')),1);render();return}
 if(a==='delpost'){db.doc('u/'+uid+'/posts/'+id).delete().then(function(){loadProf(uid);if(tab==='feed')loadFeed()}).catch(function(){msg('Não consegui apagar.')});return}
-if(a==='like'){var k=(b.getAttribute('data-uid')||viewing)+'_'+id;if(priv.likes[k])delete priv.likes[k];else priv.likes[k]=1}
+if(a==='like'){var lu=b.getAttribute('data-uid'),ref=db.doc('u/'+lu+'/posts/'+id+'/likes/'+uid),had=(findPosts(lu,id)[0]&&(findPosts(lu,id)[0].likes||[]).indexOf(uid)>-1);
+(had?ref.delete():ref.set({ts:Date.now()})).then(function(){findPosts(lu,id).forEach(function(p){var l=(p.likes||[]).filter(function(x){return x!==uid});if(!had)l.push(uid);p.likes=l});render();renderFeed()}).catch(function(){msg('Não consegui guardar o gosto.')});return}
+if(a==='cm'){var ck=b.getAttribute('data-uid')+'_'+id;openCm[ck]=!openCm[ck];render();renderFeed();return}
+if(a==='delcm'){var du=b.getAttribute('data-uid'),dc=b.getAttribute('data-cid');db.doc('u/'+du+'/posts/'+id+'/comments/'+dc).delete().then(function(){findPosts(du,id).forEach(function(p){p.cm=(p.cm||[]).filter(function(c){return c.id!==dc})});render();renderFeed()}).catch(function(){msg('Não consegui apagar o comentário.')});return}
 if(a==='tonote'){var tu=b.getAttribute('data-uid')||viewing;posts.map(function(p){p.uid=p.uid||viewing;return p}).concat(feedPosts).forEach(function(p){if(p.id===id&&p.uid===tu){priv.notes.unshift({id:Date.now(),title:p.t.slice(0,40),t:p.t});msg('Guardado nas tuas notas')}})}
 if(a==='delnote')priv.notes=priv.notes.filter(function(p){return p.id!==nid});
 if(a==='deltask')priv.tasks=priv.tasks.filter(function(p){return p.id!==nid});
 if(a==='done')priv.tasks.forEach(function(p){if(p.id===nid)p.done=!p.done});
 privSave();render();if(tab==='feed')renderFeed();
 });
+document.addEventListener('submit',function(e){var f=e.target;if(!f.classList||!f.classList.contains('cmf'))return;e.preventDefault();var t=f.querySelector('input').value.trim();if(!t)return;var pu=f.getAttribute('data-uid'),pid=f.getAttribute('data-id'),cid=String(Date.now()),c={uid:uid,t:t,ts:Date.now()};
+db.doc('u/'+pu+'/posts/'+pid+'/comments/'+cid).set(c).then(function(){c.id=cid;findPosts(pu,pid).forEach(function(p){p.cm=(p.cm||[]).concat([c])});openCm[pu+'_'+pid]=true;render();renderFeed()}).catch(function(){msg('Não consegui comentar.')})});
 var st;$('q').oninput=function(){clearTimeout(st);st=setTimeout(search,250)};
 $('photoBtn').onclick=function(){$('file').click()};
 $('file').onchange=function(){var fs=Array.prototype.slice.call(this.files,0,3-pend.length);fs.forEach(function(f){shrink(f,560,function(d){if(pend.length<3){pend.push(d);render()}})});this.value=''};
 function pick(max,k){var i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=function(){if(i.files[0])shrink(i.files[0],max,function(d){var o={};o[k]=d;upd(o)})};i.click()}
 $('avatar').onclick=$('avBtn').onclick=function(){pick(240,'avatar')};
 $('cover').onclick=$('covBtn').onclick=function(){pick(900,'cover')};
-$('editBtn').onclick=function(){var f=$('bioForm');f.hidden=!f.hidden;$('nameIn').value=P.name||'';$('bioTx').value=P.bio||'';if(!f.hidden)$('nameIn').focus()};
+$('editBtn').onclick=function(){var f=$('bioForm');f.hidden=!f.hidden;$('nameIn').value=P.name||'';$('bioTx').value=P.bio||'';if(!f.hidden){renderAcct();$('nameIn').focus()}};
 $('bioForm').onsubmit=function(e){e.preventDefault();$('bioForm').hidden=true;upd({name:$('nameIn').value.trim(),bio:$('bioTx').value.trim()})};
 $('postForm').onsubmit=function(e){e.preventDefault();var t=$('postTx').value.trim();if(!t&&!pend.length)return;db.doc('u/'+uid+'/posts/'+Date.now()).set({t:t,imgs:pend.slice(),ts:Date.now()}).then(function(){$('postTx').value='';pend=[];return loadProf(uid)}).catch(function(){msg('Não consegui publicar. Tenta com menos fotos.')})};
 $('noteForm').onsubmit=function(e){e.preventDefault();priv.notes.unshift({id:Date.now(),title:$('noteT').value.trim(),t:$('noteX').value.trim()});$('noteT').value='';$('noteX').value='';privSave();render()};
 $('taskForm').onsubmit=function(e){e.preventDefault();priv.tasks.push({id:Date.now(),t:$('taskT').value.trim(),time:$('taskH').value,done:false});$('taskT').value='';$('taskH').value='';privSave();render()};
+var auth,authMode='in';
+var AE={'auth/invalid-credential':'Email ou palavra-passe errados.','auth/wrong-password':'Email ou palavra-passe errados.','auth/user-not-found':'Email ou palavra-passe errados.','auth/invalid-email':'Esse email não parece certo.','auth/email-already-in-use':'Esse email já tem conta. Usa "Entrar".','auth/credential-already-in-use':'Esse email já tem conta. Usa "Entrar".','auth/weak-password':'A palavra-passe precisa de pelo menos 6 caracteres.','auth/network-request-failed':'Sem ligação à internet.','auth/too-many-requests':'Demasiadas tentativas. Espera um pouco.','auth/operation-not-allowed':'O início de sessão por email não está ativo no Firebase.','codigo':'Código de convite errado.'};
+function aerr(e){var c=(e&&e.code)||'';return AE[c]||('Erro: '+(c||(e&&e.message)))}
+function renderAcct(){var u=auth&&auth.currentUser,h='';if(!u)return;
+if(u.isAnonymous)h='<p class="acctp">A tua conta só existe neste telemóvel. Se o limpares ou mudares de telemóvel, perdes tudo. Guarda a conta com um email.</p><div class="row"><button type="button" class="btn o" data-act="acctform">Guardar a minha conta</button></div><div id="linkWrap" hidden><input id="lEmail" form="noform" type="email" placeholder="Email" autocomplete="email" style="margin-top:8px"><input id="lPass" form="noform" type="password" placeholder="Palavra-passe (mínimo 6)" autocomplete="new-password" style="margin-top:8px"><p id="lErr" class="aerr" role="alert"></p><button type="button" class="btn" data-act="linkgo">Guardar</button></div>';
+else h='<p class="acctp">Conta guardada: <b>'+esc(u.email||'')+'</b></p><div class="row"><button type="button" class="btn o" data-act="signout">Terminar sessão</button></div>';
+$('acct').innerHTML=h}
+function setMode(m){authMode=m;$('aName').hidden=$('aCode').hidden=(m!=='new');$('aName').required=$('aCode').required=(m==='new');$('aGo').textContent=m==='new'?'Criar conta':'Entrar';$('aSwitch').textContent=m==='new'?'Já tenho conta':'Criar conta nova';$('aPass').autocomplete=m==='new'?'new-password':'current-password';$('aErr').textContent=''}
+function askAuth(){return new Promise(function(res){
+document.body.classList.remove('loading');document.body.classList.add('auth');setMode('in');
+$('aSwitch').onclick=function(){setMode(authMode==='in'?'new':'in')};
+$('aReset').onclick=async function(){var em=$('aEmail').value.trim();if(!em){$('aErr').textContent='Escreve primeiro o teu email.';return}try{await auth.sendPasswordResetEmail(em);$('aErr').textContent='Enviei um email para repores a palavra-passe.'}catch(e){$('aErr').textContent=aerr(e)}};
+$('authForm').onsubmit=async function(ev){ev.preventDefault();$('aErr').textContent='';$('aGo').disabled=true;
+var em=$('aEmail').value.trim(),pw=$('aPass').value;
+try{
+if(authMode==='in'){await auth.signInWithEmailAndPassword(em,pw)}
+else{var c=await auth.createUserWithEmailAndPassword(em,pw);
+try{await db.doc('u/'+c.user.uid).set({name:$('aName').value.trim()||'Eu',bio:'',avatar:'',cover:'',code:$('aCode').value.trim()})}
+catch(e2){await c.user.delete().catch(function(){});throw {code:'codigo'}}}
+document.body.classList.remove('auth');document.body.classList.add('loading');res(auth.currentUser)
+}catch(e){$('aErr').textContent=aerr(e);$('aGo').disabled=false}
+}})}
 $('date').textContent=new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
 (async function(){
+var cur='início',tm;
+function step(t){var l=document.querySelector('#loading span');if(l)l.textContent=t}
+function fail(t){$('noticeTx').textContent=t;document.body.classList.remove('loading','auth');document.body.classList.add('off')}
+function arm(){clearTimeout(tm);tm=setTimeout(function(){if(document.body.classList.contains('loading'))fail('Demorou demasiado ao: '+cur+'. Recarrega a página.')},15000)}
+arm();
+var u0;
 try{
+cur='ligar ao Firebase';step('A ligar…');
 firebase.initializeApp(firebaseConfig);
-var cred=await firebase.auth().signInAnonymously();
-uid=cred.user.uid;db=firebase.firestore();
-}catch(e){}
-if(!db||!uid){document.body.classList.remove('loading');document.body.classList.add('off');return}
-try{var s=await db.doc('u/'+uid).get();if(!s.exists){var nm=(prompt('Como te chamas?')||'').trim()||'Eu';var cd=(prompt('Código de convite:')||'').trim();await db.doc('u/'+uid).set({name:nm,bio:'',avatar:'',cover:'',code:cd})}}catch(e){alert('Código errado ou sem acesso. Recarrega e tenta outra vez.');return}await privLoad();await loadProf(uid);show('feed');document.body.classList.remove('loading');loadFeed();
+auth=firebase.auth();db=firebase.firestore();
+db.settings({experimentalAutoDetectLongPolling:true,merge:true});
+cur='ver a tua sessão';step('A entrar…');
+u0=await new Promise(function(r){var off=auth.onAuthStateChanged(function(x){off();r(x)})});
+if(!u0){clearTimeout(tm);u0=await askAuth();arm()}
+uid=u0.uid;
+}catch(e){clearTimeout(tm);fail('Erro ao '+cur+': '+(e.code||e.message));return}
+try{
+cur='ver o teu perfil';step('A verificar o perfil…');
+var s=await db.doc('u/'+uid).get();
+if(!s.exists){var nm=(prompt('Como te chamas?')||'').trim()||'Eu';var cd=(prompt('Código de convite:')||'').trim();cur='criar o perfil';await db.doc('u/'+uid).set({name:nm,bio:'',avatar:'',cover:'',code:cd})}
+}catch(e){clearTimeout(tm);fail(cur==='criar o perfil'&&e.code==='permission-denied'?'Código errado ou sem acesso. Recarrega a página e tenta outra vez.':'Erro ao '+cur+': '+(e.code||e.message));return}
+clearTimeout(tm);document.body.classList.remove('off');
+show('feed');document.body.classList.remove('loading');
+await Promise.all([privLoad(),loadProf(uid),loadFeed()]);renderFeed();
 })();
+
+
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(function(){});
 </script>
 </body>
