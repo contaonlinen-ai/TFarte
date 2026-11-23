@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="pt-PT">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>O meu dia</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,600;1,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#FFF6E8;--card:#FFFFFF;--ink:#2B1A14;--muted:#6B5348;--accent:#E8702A;--amber:#F2B134;--red:#B83227;--redtext:#B83227;--soft:#F6D9BC;--line:#EBD5BE;--onacc:#2B1A14;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1E130F;--card:#2B1C16;--ink:#FFF1E0;--muted:#D3B9A6;--soft:#3B261D;--line:#4A3328;--redtext:#FF8A78;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#1E130F;--card:#2B1C16;--ink:#FFF1E0;--muted:#D3B9A6;--soft:#3B261D;--line:#4A3328;--redtext:#FF8A78;color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,sans-serif;min-height:100%;line-height:1.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.wrap{max-width:520px;margin:0 auto;padding:0 14px 110px}
+.pg[hidden]{display:none}
+h1,h2{font-family:'Fraunces',serif;font-weight:600;margin:0}
+.cover{display:block;width:calc(100% + 28px);height:130px;border:0;border-radius:0 0 22px 22px;margin:0 -14px;padding:0;position:relative;cursor:pointer;background:radial-gradient(circle at 20% 20%,var(--amber),transparent 55%),radial-gradient(circle at 85% 80%,var(--red),transparent 60%),var(--accent)}
+.cover span{position:absolute;right:12px;bottom:12px;background:rgba(43,26,20,.75);color:#FFF6E8;border-radius:16px;padding:6px 12px;font:500 13px 'DM Sans',sans-serif}
+.prof{display:flex;align-items:flex-end;gap:14px;margin-top:-40px;padding:0 4px;position:relative;z-index:1}
+.av{width:84px;height:84px;border-radius:50%;background:var(--red);color:#FFF6E8;display:grid;place-items:center;font-family:'Fraunces',serif;font-weight:600;font-size:30px;flex:none;border:4px solid var(--bg);overflow:hidden;padding:0;cursor:pointer}
+.av img{width:100%;height:100%;object-fit:cover}
+.sm{width:44px;height:44px;font-size:17px;border-width:0;cursor:default}
+.prof .btn{margin-left:auto;margin-bottom:-10px}
+.name{font-size:26px;margin:18px 4px 2px}
+.bio{margin:0 4px 12px;color:var(--muted);overflow-wrap:anywhere}
+.stats{display:flex;border:1px solid var(--line);border-radius:18px;background:var(--card);margin-bottom:14px}
+.stats div{flex:1;text-align:center;padding:12px 4px}
+.stats b{display:block;font-family:'Fraunces',serif;font-size:22px}
+.stats span{font-size:13px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin-bottom:12px}
+input,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:14px;padding:10px 14px;width:100%;min-height:46px}
+textarea{resize:vertical;min-height:84px}
+input:focus-visible,textarea:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.btn{min-height:44px;padding:0 20px;border:0;border-radius:22px;background:var(--accent);color:var(--onacc);font:inherit;font-weight:700;cursor:pointer}
+.btn.o{background:transparent;color:var(--ink);border:2px solid var(--ink)}
+.row .grow{margin-left:auto}
+.thumbs{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.thumbs button{width:64px;height:64px;padding:0;border:0;border-radius:12px;overflow:hidden;cursor:pointer}
+.thumbs img{width:100%;height:100%;object-fit:cover}
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.who{display:flex;flex-direction:column;line-height:1.25}
+.who span{font-size:13px;color:var(--muted)}
+.tx{margin:0 0 10px;font-size:17px;overflow-wrap:anywhere;white-space:pre-wrap}
+.tx.d{text-decoration:line-through;color:var(--muted)}
+.tag{color:var(--redtext);font-weight:700}
+.imgs{display:grid;gap:4px;grid-template-columns:repeat(2,1fr);margin-bottom:10px}
+.imgs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:12px;display:block}
+.imgs.n1{grid-template-columns:1fr}.imgs.n1 img{aspect-ratio:4/3}
+.acts{display:flex;gap:4px;border-top:1px solid var(--line);padding-top:6px}
+.ic{display:inline-flex;align-items:center;gap:6px;min-height:44px;min-width:44px;justify-content:center;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;font-weight:500;border-radius:22px;padding:0 12px;cursor:pointer}
+.ic svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ic[data-act="like"][aria-pressed="true"]{color:var(--redtext)}
+.ic[data-act="like"][aria-pressed="true"] svg{fill:var(--redtext)}
+.ic.r{margin-left:auto;color:var(--muted)}
+.note{background:var(--soft);border-color:transparent}
+.note h2{font-size:20px;margin-bottom:4px}
+.bar{height:10px;border-radius:5px;background:var(--soft);overflow:hidden;margin-top:10px}
+.bar div{height:100%;background:var(--accent);transition:width .3s}
+.empty{text-align:center;color:var(--muted);padding:26px 12px}
+.empty b{display:block;font-family:'Fraunces',serif;font-size:21px;color:var(--ink)}
+.pgh{display:flex;align-items:baseline;justify-content:space-between;padding:16px 4px 10px}
+.pgh h1{font-size:28px}.pgh span{color:var(--muted);font-size:14px;text-transform:capitalize}
+#msg{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:20px;font-size:14px;z-index:20;max-width:90%}
+#msg[hidden]{display:none}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:9}
+nav div{max-width:520px;margin:0 auto;display:flex}
+nav button{flex:1;min-height:58px;border:0;background:none;color:var(--muted);font:inherit;font-weight:500;font-size:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-top:3px solid transparent}
+nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav button[aria-pressed="true"]{color:var(--ink);font-weight:700;border-top-color:var(--accent)}
+.side,.main{display:contents}
+@media (min-width:600px){.wrap{max-width:640px}}
+@media (min-width:900px){
+body{padding-left:230px}
+.wrap{max-width:1060px;padding:0 32px 40px}
+nav{top:0;right:auto;width:230px;border-top:0;border-right:1px solid var(--line);padding:28px 14px}
+nav div{flex-direction:column;gap:6px;max-width:none;margin:0}
+nav button{flex:none;flex-direction:row;justify-content:flex-start;gap:12px;min-height:48px;padding:0 18px;font-size:16px;border-top:0;border-radius:24px}
+nav button[aria-pressed="true"]{background:var(--soft)}
+#p-perfil:not([hidden]){display:grid;grid-template-columns:340px 1fr;column-gap:28px;align-items:start}
+.cover{grid-column:1/-1;width:100%;margin:20px 0 0;height:220px;border-radius:22px}
+.side{display:block;position:sticky;top:16px}
+.main{display:block;padding-top:16px}
+.prof{margin-top:-44px}
+#notes{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;align-items:start}
+#notes .card{margin:0}
+#notes .empty{grid-column:1/-1}
+#p-dia{max-width:720px;margin:0 auto}
+#msg{bottom:24px}
+}
+#notice{display:none;max-width:520px;margin:0 auto;padding:60px 20px;text-align:center}
+.off #notice{display:block}.off .wrap,.off nav{display:none}
+.res{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;border-radius:20px;padding:12px 14px;margin-bottom:10px;cursor:pointer;min-height:64px}
+.res b{display:block}.res span{color:var(--muted);font-size:14px;overflow-wrap:anywhere}
+.res .av{width:48px;height:48px;font-size:18px;border-width:0;cursor:inherit}
+.cover:disabled,.av:disabled{cursor:default}
+.vb{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0}
+.vb[hidden]{display:none}
+</style>
+</head>
+<body>
+<div id="notice"><h1>O meu dia</h1><p>Para usares a app, abre este link com a tua conta Claude. Se ainda não tens acesso, pede à Patrícia para te convidar.</p></div>
+<div class="wrap">
+
+<section class="pg" id="p-perfil">
+<div class="vb" id="viewbar" hidden><b id="vbt"></b><button class="btn o" data-act="back">Voltar</button></div>
+<button class="cover" id="cover" aria-label="Mudar foto de capa"><span>Mudar capa</span></button>
+<div class="side"><div class="prof">
+<button class="av" id="avatar" aria-label="Mudar foto de perfil"></button>
+<button class="btn o" id="editBtn">Editar perfil</button>
+</div>
+<h1 class="name" id="pname"></h1>
+<p class="bio" id="bio"></p>
+<form class="card" id="bioForm" hidden>
+<input id="nameIn" aria-label="O teu nome" maxlength="40" required>
+<textarea id="bioTx" aria-label="A tua bio" maxlength="160" placeholder="A tua bio" style="margin-top:8px"></textarea>
+<div class="row"><button class="btn" type="submit">Guardar</button><button class="btn o" type="button" id="avBtn">Foto de perfil</button><button class="btn o" type="button" id="covBtn">Foto de capa</button></div>
+</form>
+<div class="stats" id="stats"></div></div>
+<div class="main"><form class="card" id="postForm">
+<textarea id="postTx" aria-label="O que se passa hoje?" placeholder="O que se passa hoje? Usa #hashtags à vontade" maxlength="500"></textarea>
+<div class="thumbs" id="thumbs"></div>
+<div class="row">
+<button class="btn o" type="button" id="photoBtn">Foto</button>
+<button class="btn grow" type="submit">Publicar</button>
+</div>
+<input type="file" id="file" accept="image/*" multiple hidden>
+</form>
+<div id="feed"></div></div>
+</section>
+
+<section class="pg" id="p-descobrir" hidden>
+<div class="pgh"><h1>Descobrir</h1></div>
+<div class="card"><input id="q" type="search" aria-label="Pesquisar pessoas pelo nome" placeholder="Pesquisar pelo nome…"></div>
+<div id="results"></div>
+</section>
+
+<section class="pg" id="p-notas" hidden>
+<div class="pgh"><h1>Notas</h1></div>
+<form class="card" id="noteForm">
+<input id="noteT" aria-label="Título da nota" placeholder="Título" maxlength="60" required>
+<textarea id="noteX" aria-label="Texto da nota" placeholder="Escreve aqui as tuas ideias…" style="margin-top:8px"></textarea>
+<div class="row"><button class="btn grow" type="submit">Guardar nota</button></div>
+</form>
+<div id="notes"></div>
+</section>
+
+<section class="pg" id="p-dia" hidden>
+<div class="pgh"><h1>O meu dia</h1><span id="date"></span></div>
+<div class="card" id="hero"></div>
+<form class="card" id="taskForm">
+<input id="taskT" aria-label="Nova tarefa" placeholder="O que tens para fazer?" maxlength="120" required>
+<div class="row"><input id="taskH" type="time" aria-label="Hora" style="width:120px"><button class="btn grow" type="submit">Adicionar</button></div>
+</form>
+<div id="tasks"></div>
+</section>
+
+</div>
+<div id="msg" role="status" hidden></div>
+<nav><div>
+<button data-tab="perfil" aria-label="Perfil"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Perfil</button>
+<button data-tab="descobrir" aria-label="Descobrir"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Descobrir</button>
+<button data-tab="notas" aria-label="Notas"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM9 8h6M9 12h6M9 16h3"/></svg>Notas</button>
+<button data-tab="dia" aria-label="O meu dia"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.500 12 2.500 2.500 4.500-5"/></svg>O meu dia</button>
+</div></nav>
+<script>
+var db,user,uid,viewing,P={},posts=[],priv={notes:[],tasks:[],likes:{}},pend=[],tab='perfil';
+function $(i){return document.getElementById(i)}
+function msg(t){var m=$('msg');m.textContent=t;m.hidden=false;clearTimeout(msg.t);msg.t=setTimeout(function(){m.hidden=true},3500)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function rich(s){return esc(s).replace(/(^|\s)#([\p{L}\p{N}_]+)/gu,'$1<span class="tag">#$2</span>')}
+function fmt(ts){return new Date(Number(ts)).toLocaleString('pt-PT',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+function norm(s){return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase()}
+function ini(n){return (n||'?').trim().charAt(0).toUpperCase()}
+function avh(cls,src,n){return '<div class="av '+cls+'" aria-hidden="true">'+(src?'<img src="'+src+'" alt="">':esc(ini(n)))+'</div>'}
+function shrink(f,max,cb){var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){var s=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext('2d').drawImage(im,0,0,c.width,c.height);cb(c.toDataURL('image/jpeg',0.62))};im.src=r.result};r.readAsDataURL(f)}
+var I={like:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.600-9.300-9.100C1.100 8.600 3 5 6.500 5c2 0 3.700 1.100 5.500 3.300C13.800 6.100 15.500 5 17.500 5 21 5 22.900 8.600 21.300 11.900 19 16.400 12 21 12 21z"/></svg>',note:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14v18H5zM9 8h6M9 12h6"/></svg>',del:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg>',ok:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>'};
+async function privLoad(){try{var s=await db.doc('data/users/'+uid+'/main').get();if(s.exists){var d=s.data();priv.notes=d.notes||[];priv.tasks=d.tasks||[];priv.likes=d.likes||{}}}catch(e){}}
+function privSave(){return db.doc('data/users/'+uid+'/main').set(priv).catch(function(){msg('Não consegui guardar.')})}
+async function loadProf(u){viewing=u;try{var s=await db.doc('u/'+u).get();P=s.exists?s.data():{name:'Sem nome'};var q=await db.collection('u/'+u+'/posts').orderBy('ts','desc').limit(30).get();posts=q.docs.map(function(d){var x=d.data();x.id=d.id;return x})}catch(e){posts=[];msg('Não consegui carregar o perfil.')}render()}
+function upd(o){return db.doc('u/'+uid).update(o).then(function(){return loadProf(uid)}).catch(function(){msg('Não consegui guardar. A foto pode ser grande demais.')})}
+function render(){
+var me=viewing===uid;
+$('viewbar').hidden=me;$('vbt').textContent='Perfil de '+(P.name||'');
+$('pname').textContent=P.name||'';$('bio').textContent=P.bio||(me?'Escreve uma bio em "Editar perfil".':'');
+$('cover').style.background=P.cover?'url('+P.cover+') center/cover':'';$('cover').disabled=!me;$('cover').querySelector('span').hidden=!me;
+$('avatar').disabled=!me;$('avatar').innerHTML=P.avatar?'<img src="'+P.avatar+'" alt="">':esc(ini(P.name));
+$('editBtn').hidden=!me;$('postForm').hidden=!me;if(!me)$('bioForm').hidden=true;
+var dn=priv.tasks.filter(function(t){return t.done}).length;
+$('stats').innerHTML='<div><b>'+posts.length+'</b><span>Publicações</span></div>'+(me?'<div><b>'+priv.notes.length+'</b><span>Notas</span></div><div><b>'+dn+'</b><span>Tarefas feitas</span></div>':'');
+$('thumbs').innerHTML=pend.map(function(p,i){return '<button type="button" data-act="unpend" data-i="'+i+'" aria-label="Remover foto"><img src="'+p+'" alt=""></button>'}).join('');
+var h='';
+if(!posts.length)h='<div class="empty"><b>Ainda sem publicações</b>'+(me?'Escreve algo ou partilha uma foto lá em cima.':'Esta pessoa ainda não publicou nada.')+'</div>';
+posts.forEach(function(p){
+var im=p.imgs&&p.imgs.length?'<div class="imgs n'+p.imgs.length+'">'+p.imgs.map(function(s){return '<img src="'+s+'" alt="Foto publicada">'}).join('')+'</div>':'';
+var lk=!!priv.likes[viewing+'_'+p.id];
+h+='<article class="card"><div class="ph">'+avh('sm',P.avatar,P.name)+'<div class="who"><b>'+esc(P.name)+'</b><span>'+fmt(p.ts)+'</span></div></div>'+(p.t?'<p class="tx">'+rich(p.t)+'</p>':'')+im+'<div class="acts"><button class="ic" data-act="like" data-id="'+p.id+'" aria-pressed="'+lk+'" aria-label="Gosto">'+I.like+'</button>'+(p.t?'<button class="ic" data-act="tonote" data-id="'+p.id+'">'+I.note+'Nota</button>':'')+(me?'<button class="ic r" data-act="delpost" data-id="'+p.id+'" aria-label="Apagar publicação">'+I.del+'</button>':'')+'</div></article>'});
+$('feed').innerHTML=h;
+$('notes').innerHTML=priv.notes.length?priv.notes.map(function(n){return '<article class="card note"><h2>'+esc(n.title)+'</h2><p class="tx">'+rich(n.t)+'</p><div class="acts"><span class="who" style="justify-content:center"><span>'+fmt(n.id)+'</span></span><button class="ic r" data-act="delnote" data-id="'+n.id+'" aria-label="Apagar nota">'+I.del+'</button></div></article>'}).join(''):'<div class="empty"><b>Sem notas</b>Guarda aqui ideias, listas e rascunhos. Só tu as vês.</div>';
+var tot=priv.tasks.length;
+$('hero').innerHTML='<h2>Oii, '+esc((P.name||'').split(' ')[0]||'')+'!</h2><p style="margin:4px 0 0;color:var(--muted)">'+(!tot?'O teu dia está em branco. Bora?':dn===tot?'Dia fechado, parabéns!':'Já fizeste '+dn+' de '+tot+'. Continua!')+'</p><div class="bar" role="progressbar" aria-label="Progresso do dia" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+(tot?Math.round(dn/tot*100):0)+'"><div style="width:'+(tot?dn/tot*100:0)+'%"></div></div>';
+var ts=priv.tasks.slice().sort(function(a,b){if(a.done!==b.done)return a.done?1:-1;var x=a.time||'99:99',y=b.time||'99:99';return x<y?-1:x>y?1:a.id-b.id});
+$('tasks').innerHTML=ts.length?ts.map(function(t){return '<article class="card" style="padding:8px 12px"><div class="acts" style="border:0;padding:0;align-items:center"><button class="ic" data-act="done" data-id="'+t.id+'" aria-pressed="'+t.done+'" aria-label="'+(t.done?'Desfazer':'Marcar como feita')+'" style="'+(t.done?'color:var(--redtext)':'')+'">'+I.ok+'</button><div style="flex:1;min-width:0"><div class="tx'+(t.done?' d':'')+'" style="margin:0;font-size:16px">'+esc(t.t)+'</div>'+(t.time?'<span class="who"><span>'+esc(t.time)+'</span></span>':'')+'</div><button class="ic r" data-act="deltask" data-id="'+t.id+'" aria-label="Apagar tarefa" style="margin-left:0">'+I.del+'</button></div></article>'}).join(''):'<div class="empty"><b>Nada por aqui</b>Adiciona a primeira tarefa do dia.</div>';
+}
+async function search(){var q=norm($('q').value);try{var s=await db.collection('u').limit(200).get();var r=s.docs.map(function(d){var x=d.data();x.uid=d.id;return x}).filter(function(x){return !q||norm(x.name).indexOf(q)>-1});$('results').innerHTML=r.length?r.map(function(x){return '<button class="res" data-act="open" data-uid="'+esc(x.uid)+'">'+avh('',x.avatar,x.name)+'<div><b>'+esc(x.name)+'</b><span>'+esc(x.bio||'')+'</span></div></button>'}).join(''):'<div class="empty"><b>Ninguém com esse nome</b>Confirma o nome ou convida a pessoa para a app.</div>'}catch(e){msg('Não consegui pesquisar.')}}
+function show(t){tab=t;['perfil','descobrir','notas','dia'].forEach(function(k){$('p-'+k).hidden=k!==t});document.querySelectorAll('nav button').forEach(function(b){b.setAttribute('aria-pressed',b.getAttribute('data-tab')===t)});window.scrollTo(0,0)}
+document.addEventListener('click',function(e){
+var n=e.target.closest('nav button');if(n){var t=n.getAttribute('data-tab');show(t);if(t==='perfil')loadProf(uid);if(t==='descobrir')search();return}
+var b=e.target.closest('[data-act]');if(!b)return;
+var a=b.getAttribute('data-act'),id=b.getAttribute('data-id'),nid=Number(id);
+if(a==='open'){show('perfil');loadProf(b.getAttribute('data-uid'));return}
+if(a==='back'){show('descobrir');return}
+if(a==='unpend'){pend.splice(Number(b.getAttribute('data-i')),1);render();return}
+if(a==='delpost'){db.doc('u/'+uid+'/posts/'+id).delete().then(function(){loadProf(uid)}).catch(function(){msg('Não consegui apagar.')});return}
+if(a==='like'){var k=viewing+'_'+id;if(priv.likes[k])delete priv.likes[k];else priv.likes[k]=1}
+if(a==='tonote'){posts.forEach(function(p){if(p.id===id){priv.notes.unshift({id:Date.now(),title:p.t.slice(0,40),t:p.t});msg('Guardado nas tuas notas')}})}
+if(a==='delnote')priv.notes=priv.notes.filter(function(p){return p.id!==nid});
+if(a==='deltask')priv.tasks=priv.tasks.filter(function(p){return p.id!==nid});
+if(a==='done')priv.tasks.forEach(function(p){if(p.id===nid)p.done=!p.done});
+privSave();render();
+});
+var st;$('q').oninput=function(){clearTimeout(st);st=setTimeout(search,250)};
+$('photoBtn').onclick=function(){$('file').click()};
+$('file').onchange=function(){var fs=Array.prototype.slice.call(this.files,0,3-pend.length);fs.forEach(function(f){shrink(f,560,function(d){if(pend.length<3){pend.push(d);render()}})});this.value=''};
+function pick(max,k){var i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=function(){if(i.files[0])shrink(i.files[0],max,function(d){var o={};o[k]=d;upd(o)})};i.click()}
+$('avatar').onclick=$('avBtn').onclick=function(){pick(240,'avatar')};
+$('cover').onclick=$('covBtn').onclick=function(){pick(900,'cover')};
+$('editBtn').onclick=function(){var f=$('bioForm');f.hidden=!f.hidden;$('nameIn').value=P.name||'';$('bioTx').value=P.bio||'';if(!f.hidden)$('nameIn').focus()};
+$('bioForm').onsubmit=function(e){e.preventDefault();$('bioForm').hidden=true;upd({name:$('nameIn').value.trim(),bio:$('bioTx').value.trim()})};
+$('postForm').onsubmit=function(e){e.preventDefault();var t=$('postTx').value.trim();if(!t&&!pend.length)return;db.doc('u/'+uid+'/posts/'+Date.now()).set({t:t,imgs:pend.slice(),ts:Date.now()}).then(function(){$('postTx').value='';pend=[];return loadProf(uid)}).catch(function(){msg('Não consegui publicar. Tenta com menos fotos.')})};
+$('noteForm').onsubmit=function(e){e.preventDefault();priv.notes.unshift({id:Date.now(),title:$('noteT').value.trim(),t:$('noteX').value.trim()});$('noteT').value='';$('noteX').value='';privSave();render()};
+$('taskForm').onsubmit=function(e){e.preventDefault();priv.tasks.push({id:Date.now(),t:$('taskT').value.trim(),time:$('taskH').value,done:false});$('taskT').value='';$('taskH').value='';privSave();render()};
+$('date').textContent=new Date().toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'});
+(async function(){
+try{user=await claude.use('user');db=await claude.use('db');uid=user&&await user.id()}catch(e){}
+if(!db||!uid){document.body.classList.add('off');return}
+try{var s=await db.doc('u/'+uid).get();if(!s.exists){var m=await user.me();await db.doc('u/'+uid).set({name:m.name||'Eu',bio:'',avatar:'',cover:''})}}catch(e){msg('Não consegui criar o teu perfil.')}
+await privLoad();await loadProf(uid);show('perfil');
+})();
+</script>
+</body>
+</html>
