@@ -284,8 +284,7 @@ var cred=await firebase.auth().signInAnonymously();
 uid=cred.user.uid;db=firebase.firestore();
 }catch(e){}
 if(!db||!uid){document.body.classList.add('off');return}
-try{var s=await db.doc('u/'+uid).get();if(!s.exists){var nm=(prompt('Como te chamas?')||'').trim()||'Eu';await db.doc('u/'+uid).set({name:nm,bio:'',avatar:'',cover:''})}}catch(e){msg('Não consegui criar o teu perfil.')}
-await privLoad();await loadProf(uid);show('feed');loadFeed();
+try{var s=await db.doc('u/'+uid).get();if(!s.exists){var nm=(prompt('Como te chamas?')||'').trim()||'Eu';var cd=(prompt('Código de convite:')||'').trim();await db.doc('u/'+uid).set({name:nm,bio:'',avatar:'',cover:'',code:cd})}}catch(e){alert('Código errado ou sem acesso. Recarrega e tenta outra vez.');return}await privLoad();await loadProf(uid);show('feed');loadFeed();
 })();
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(function(){});
 </script>
