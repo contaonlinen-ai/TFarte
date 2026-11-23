@@ -109,10 +109,15 @@ nav button[aria-pressed="true"]{background:var(--soft)}
 .vb[hidden]{display:none}
 #p-feed{max-width:640px;margin:0 auto}
 .wb{display:flex;align-items:center;gap:10px;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:0;min-height:44px;cursor:pointer;border-radius:12px;margin-bottom:8px;max-width:100%}
+#loading{display:none;position:fixed;inset:0;z-index:30;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:14px;color:var(--muted);font-weight:500}
+#loading img{border-radius:22px}
+body.loading #loading{display:flex}
+body.loading .wrap,body.loading nav{visibility:hidden}
 </style>
 </head>
-<body>
-<div id="notice"><h1>TFarte</h1><p>Não consegui ligar à base de dados. Confirma se a configuração do Firebase está preenchida no início do script e tenta outra vez.</p></div>
+<body class="loading">
+<div id="notice"><h1>TFarte</h1><p id="noticeTx">Não consegui ligar à base de dados. ...</p></div>
+<div id="loading" role="status"><img src="icon-192.png" alt="" width="96" height="96"><span>A carregar…</span></div>
 <div class="wrap">
 
 <section class="pg" id="p-perfil">
@@ -283,7 +288,7 @@ firebase.initializeApp(firebaseConfig);
 var cred=await firebase.auth().signInAnonymously();
 uid=cred.user.uid;db=firebase.firestore();
 }catch(e){}
-if(!db||!uid){document.body.classList.add('off');return}
+if(!db||!uid){document.body.classList.remove('loading');document.body.classList.add('off');return}
 try{var s=await db.doc('u/'+uid).get();if(!s.exists){var nm=(prompt('Como te chamas?')||'').trim()||'Eu';var cd=(prompt('Código de convite:')||'').trim();await db.doc('u/'+uid).set({name:nm,bio:'',avatar:'',cover:'',code:cd})}}catch(e){alert('Código errado ou sem acesso. Recarrega e tenta outra vez.');return}await privLoad();await loadProf(uid);show('feed');loadFeed();
 })();
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(function(){});
