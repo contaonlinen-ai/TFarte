@@ -20,14 +20,17 @@ messaging.onBackgroundMessage(function(payload) {
 
   var title = data.title || "TFarte";
 
-  var options = {
-    body: data.body || "Tens uma nova notificação!",
-    icon: "./icon-192.png",
-    badge: "./icon-192.png",
-    data: {
-      url: data.url || "./"
-    }
-  };
+  var logo = new URL("icon-192.png", self.registration.scope).href;
+
+var options = {
+  body: data.body || "Tens uma nova notificação!",
+  icon: logo,
+  badge: logo,
+  image: logo,
+  data: {
+    url: data.url || "./"
+  }
+};
 
   self.registration.showNotification(title, options);
 });
