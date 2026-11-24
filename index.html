@@ -312,8 +312,67 @@ if(a==='open'){prev=tab;show('perfil');loadProf(b.getAttribute('data-uid'));retu
 if(a==='back'){show(prev||'descobrir');return}
 if(a==='unpend'){pend.splice(Number(b.getAttribute('data-i')),1);render();return}
 if(a==='delpost'){db.doc('u/'+uid+'/posts/'+id).delete().then(function(){loadProf(uid);if(tab==='feed')loadFeed()}).catch(function(){msg('Não consegui apagar.')});return}
-if(a==='like'){var lu=b.getAttribute('data-uid'),ref=db.doc('u/'+lu+'/posts/'+id+'/likes/'+uid),had=(findPosts(lu,id)[0]&&(findPosts(lu,id)[0].likes||[]).indexOf(uid)>-1);
-(had?ref.delete():ref.set({ts:Date.now()})).then(function(){findPosts(lu,id).forEach(function(p){var l=(p.likes||[]).filter(function(x){return x!==uid});if(!had)l.push(uid);p.likes=l});render();renderFeed()}).catch(function(){msg('Não consegui guardar o gosto.')});return}
+
+if(a==='like'){
+  var lu=b.getAttribute('data-uid');
+  var ref=db.doc('u/'+lu+'/posts/'+id+'/likes/'+uid);
+  var had=(findPosts(lu,id)[0] &&
+    (findPosts(lu,id)[0].likes||[]).indexOf(uid)>-1);
+
+  (had ? ref.delete() : ref.set({ts:Date.now()}))
+    .then(function(){
+      findPosts(lu,id).forEach(function(p){
+        var l=(p.likes||[]).filter(function(x){
+          return x!==uid;
+        });
+        if(!had)l.push(uid);
+        p.likes=l;
+      });
+
+      render();
+      renderFeed();
+
+      // Notificar o autor quando recebe um novo gosto
+      if(!had && lu!==uid && firebase.auth().currentUser){
+        firebase.auth().currentUser.getIdToken()
+          .then(function(idToken){
+            return fetch(
+              'https://tfarte-push.contaonlinen.workers.dev',
+              {
+                method:'POST',
+                headers:{
+                  'Content-Type':'application/json',
+                  'Authorization':'Bearer '+idToken
+                },
+                body:JSON.stringify({
+                  type:'like',
+                  targetUid:lu,
+                  postId:id
+                })
+              }
+            );
+          })
+          .then(function(response){
+            if(!response.ok){
+              throw new Error('Erro HTTP: '+response.status);
+            }
+            return response.json();
+          })
+          .then(function(result){
+            console.log('Notificação de gosto:',result);
+          })
+          .catch(function(error){
+            console.error('Erro ao enviar notificação de gosto:',error);
+          });
+      }
+    })
+    .catch(function(){
+      msg('Não consegui guardar o gosto.');
+    });
+
+  return;
+}
+
 if(a==='cm'){var ck=b.getAttribute('data-uid')+'_'+id;openCm[ck]=!openCm[ck];render();renderFeed();return}
 if(a==='delcm'){var du=b.getAttribute('data-uid'),dc=b.getAttribute('data-cid');db.doc('u/'+du+'/posts/'+id+'/comments/'+dc).delete().then(function(){findPosts(du,id).forEach(function(p){p.cm=(p.cm||[]).filter(function(c){return c.id!==dc})});render();renderFeed()}).catch(function(){msg('Não consegui apagar o comentário.')});return}
 if(a==='tonote'){var tu=b.getAttribute('data-uid')||viewing;posts.map(function(p){p.uid=p.uid||viewing;return p}).concat(feedPosts).forEach(function(p){if(p.id===id&&p.uid===tu){priv.notes.unshift({id:Date.now(),title:p.t.slice(0,40),t:p.t});msg('Guardado nas tuas notas')}})}
