@@ -21,6 +21,7 @@ messaging.onBackgroundMessage(function(payload) {
   var title = data.title || "TFarte";
 
   var logo = new URL("icon-192.png", self.registration.scope).href;
+  var badgeIcon = new URL("badge-96.png", self.registration.scope).href;
 
 var options = {
   body: data.body || "Tens uma nova notificação!",
