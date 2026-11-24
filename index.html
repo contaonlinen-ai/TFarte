@@ -439,7 +439,8 @@ btnNotif.addEventListener('click', async function() {
 
     alert('Notificações ativadas com sucesso!');
 
-    btnNotif.textContent = '🔔 Notificações ativadas';
+    btnNotif.textContent = '✓';
+    btnNotif.title = 'Notificações ativadas';
 
   } catch (error) {
     console.error('Erro nas notificações:', error);
