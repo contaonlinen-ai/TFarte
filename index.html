@@ -382,6 +382,69 @@ if(!s.exists){var nm=(prompt('Como te chamas?')||'').trim()||'Eu';var cd=(prompt
 clearTimeout(tm);document.body.classList.remove('off');
 show('feed');document.body.classList.remove('loading');
 await Promise.all([privLoad(),loadProf(uid),loadFeed()]);renderFeed();
+/* Ativar notificações TFarte */
+var btnNotif = document.createElement('button');
+
+btnNotif.textContent = '🔔 Ativar notificações';
+
+btnNotif.style.cssText =
+  'position:fixed;bottom:20px;right:15px;z-index:9999;' +
+  'padding:13px 18px;border:0;border-radius:25px;' +
+  'background:#780001;color:white;font-weight:bold;' +
+  'cursor:pointer;';
+
+document.body.appendChild(btnNotif);
+
+btnNotif.addEventListener('click', async function() {
+  try {
+    if (!('Notification' in window) ||
+        !('serviceWorker' in navigator)) {
+      alert('O teu navegador não suporta notificações.');
+      return;
+    }
+
+    var permission = await Notification.requestPermission();
+
+    if (permission !== 'granted') {
+      alert('Precisas de permitir as notificações.');
+      return;
+    }
+
+    var supported = await firebase.messaging.isSupported();
+
+    if (!supported) {
+      alert('O Firebase Messaging não é suportado neste navegador.');
+      return;
+    }
+
+    var registration = await navigator.serviceWorker.ready;
+    var messaging = firebase.messaging();
+
+    var token = await messaging.getToken({
+      vapidKey: 'BNM1sbqc6CZVxy_zQmDsgCE9LoOguJL7VlMnMK09_OY7zX19Boqyljz9uS0CKTSEG2kUheZpQfBicDsB410pBJQ',
+      serviceWorkerRegistration: registration
+    });
+
+    if (!token) {
+      alert('Não foi possível obter o token do telemóvel.');
+      return;
+    }
+
+    await db.doc('u/' + uid + '/fcmTokens/' + token).set({
+      token: token,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    alert('Notificações ativadas com sucesso!');
+
+    btnNotif.textContent = '🔔 Notificações ativadas';
+
+  } catch (error) {
+    console.error('Erro nas notificações:', error);
+    alert('Erro ao ativar notificações: ' + error.message);
+  }
+});
+
 })();
 
 
