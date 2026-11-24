@@ -7,6 +7,7 @@ var firebaseConfig = {
   apiKey: "AIzaSyBUmJpCIUQuNJHz3IS6ag-A_lt5YRVUPlg",
   authDomain: "tfarte-90cca.firebaseapp.com",
   projectId: "tfarte-90cca",
+  messagingSenderId: "419540859839",
   appId: "1:419540859839:web:5c02bf3e62a74b2044ff0a"
 };
 
