@@ -322,8 +322,57 @@ if(a==='deltask')priv.tasks=priv.tasks.filter(function(p){return p.id!==nid});
 if(a==='done')priv.tasks.forEach(function(p){if(p.id===nid)p.done=!p.done});
 privSave();render();if(tab==='feed')renderFeed();
 });
-document.addEventListener('submit',function(e){var f=e.target;if(!f.classList||!f.classList.contains('cmf'))return;e.preventDefault();var t=f.querySelector('input').value.trim();if(!t)return;var pu=f.getAttribute('data-uid'),pid=f.getAttribute('data-id'),cid=String(Date.now()),c={uid:uid,t:t,ts:Date.now()};
-db.doc('u/'+pu+'/posts/'+pid+'/comments/'+cid).set(c).then(function(){c.id=cid;findPosts(pu,pid).forEach(function(p){p.cm=(p.cm||[]).concat([c])});openCm[pu+'_'+pid]=true;render();renderFeed()}).catch(function(){msg('Não consegui comentar.')})});
+document.addEventListener('submit',function(e){
+  var f=e.target;
+  if(!f.classList||!f.classList.contains('cmf'))return;
+  e.preventDefault();
+
+  var t=f.querySelector('input').value.trim();
+  if(!t)return;
+
+  var pu=f.getAttribute('data-uid');
+  var pid=f.getAttribute('data-id');
+  var cid=String(Date.now());
+  var c={uid:uid,t:t,ts:Date.now()};
+
+  db.doc('u/'+pu+'/posts/'+pid+'/comments/'+cid).set(c).then(function(){
+    c.id=cid;
+    findPosts(pu,pid).forEach(function(p){
+      p.cm=(p.cm||[]).concat([c]);
+    });
+    openCm[pu+'_'+pid]=true;
+    render();
+    renderFeed();
+
+    // Enviar notificação ao autor da publicação
+    if(pu!==uid && firebase.auth().currentUser){
+      firebase.auth().currentUser.getIdToken().then(function(idToken){
+        return fetch('https://tfarte-push.contaonlinen.workers.dev',{
+          method:'POST',
+          headers:{
+            'Content-Type':'application/json',
+            'Authorization':'Bearer '+idToken
+          },
+          body:JSON.stringify({
+            targetUid:pu,
+            postId:pid,
+            commentId:cid
+          })
+        });
+      }).then(function(response){
+        if(!response.ok)throw new Error('Erro HTTP: '+response.status);
+        return response.json();
+      }).then(function(result){
+        console.log('Notificação:',result);
+      }).catch(function(error){
+        console.error('Erro ao enviar notificação:',error);
+      });
+    }
+  }).catch(function(){
+    msg('Não consegui comentar.');
+  });
+});
+
 var st;$('q').oninput=function(){clearTimeout(st);st=setTimeout(search,250)};
 $('photoBtn').onclick=function(){$('file').click()};
 $('file').onchange=function(){var fs=Array.prototype.slice.call(this.files,0,3-pend.length);fs.forEach(function(f){shrink(f,560,function(d){if(pend.length<3){pend.push(d);render()}})});this.value=''};
