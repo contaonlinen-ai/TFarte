@@ -385,13 +385,15 @@ await Promise.all([privLoad(),loadProf(uid),loadFeed()]);renderFeed();
 /* Ativar notificações TFarte */
 var btnNotif = document.createElement('button');
 
-btnNotif.textContent = '🔔 Ativar notificações';
+btnNotif.textContent = '🔔';
 
 btnNotif.style.cssText =
-  'position:fixed;bottom:20px;right:15px;z-index:9999;' +
-  'padding:13px 18px;border:0;border-radius:25px;' +
-  'background:#780001;color:white;font-weight:bold;' +
-  'cursor:pointer;';
+  'position:fixed;bottom:85px;right:15px;z-index:9999;' +
+  'width:42px;height:42px;padding:0;' +
+  'border:0;border-radius:50%;' +
+  'background:#780001;color:white;' +
+  'font-size:19px;cursor:pointer;' +
+  'box-shadow:0 2px 8px rgba(0,0,0,.2);';
 
 document.body.appendChild(btnNotif);
 
